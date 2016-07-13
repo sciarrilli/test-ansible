@@ -1,0 +1,12 @@
+---
+
+  - name: Ansible+Comware Ping
+    hosts: all
+    gather_facts: no
+    connection: local
+
+    tasks:
+
+      - name: ping wbench
+        comware_ping: host=192.168.0.254 username={{ username }} password={{ password }} hostname={{ inventory_hostname }}
+

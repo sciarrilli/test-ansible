@@ -1,0 +1,161 @@
+{% set intvars = interfaces[inventory_hostname] -%}
+{% set mgmtvars = mgmt[inventory_hostname] -%}
+{% set fabricvars = fabric[inventory_hostname] -%}
+{% set blahvars = blah[inventory_hostname] -%}
+#
+ version 7.1.074, Demo 0391P02
+#
+ sysname {{mgmtvars.hostname}}
+#
+ password-recovery enable
+#
+vlan 1
+#
+irf-port
+#
+interface NULL0
+#
+interface LoopBack0
+ ip address {{mgmtvars.loopback0_ip}}
+#
+interface GigabitEthernet1/0
+ port link-mode route
+ ip address dhcp-alloc
+#
+interface GigabitEthernet2/0
+ port link-mode route
+ ip address {{mgmtvars.management_ip}}
+#
+{% for interface in intvars.keys() -%}
+interface {{interface}}
+ port link-mode route
+{% if intvars[interface].ipv4 is defined %}
+ ip address {{intvars[interface].ipv4}} 255.255.255.0
+{% endif -%}
+{% endfor %}
+#
+bgp {{ fabricvars.asn }}
+{% for peer in fabricvars.fabricpeers %}
+ peer {{ peer }}
+{% endfor %}
+ #
+ address-family ipv4 unicast
+  balance ebgp 8
+  import-route direct
+{% for network in fabricvars.networks %}
+  network {{ network }}
+{% endfor %}
+{% for peer in blahvars.enablepeers %}
+  peer {{ peer }} enable
+{% endfor %}
+#
+ scheduler logfile size 16
+#
+line class aux
+ user-role network-operator
+#
+line class console
+ user-role network-admin
+#
+line class vty
+ user-role network-operator
+#
+line aux 0
+ user-role network-operator
+#
+line con 0
+ user-role network-admin
+#
+line vty 0 63
+ authentication-mode scheme
+ user-role network-operator
+#
+ ssh server enable
+ ssh user vagrant service-type all authentication-type publickey assign publickey WBENCH
+ scp server enable
+#
+domain system
+#
+ domain default enable system
+#
+role name level-0
+ description Predefined level-0 role
+#
+role name level-1
+ description Predefined level-1 role
+#
+role name level-2
+ description Predefined level-2 role
+#
+role name level-3
+ description Predefined level-3 role
+#
+role name level-4
+ description Predefined level-4 role
+#
+role name level-5
+ description Predefined level-5 role
+#
+role name level-6
+ description Predefined level-6 role
+#
+role name level-7
+ description Predefined level-7 role
+#
+role name level-8
+ description Predefined level-8 role
+#
+role name level-9
+ description Predefined level-9 role
+#
+role name level-10
+ description Predefined level-10 role
+#
+role name level-11
+ description Predefined level-11 role
+#
+role name level-12
+ description Predefined level-12 role
+#
+role name level-13
+ description Predefined level-13 role
+#
+role name level-14
+ description Predefined level-14 role
+#
+user-group system
+#
+local-user admin class manage
+ password hash $h$6$wS2tYrI/alXqRosH$j610UKV6fUWfhQM5ujKx7Ml0pkaPOl+tzGGQQItvAt07VmO43J8oQtwMz5YYg6LgaclC6rb1lDe7WcqwvXHphA==
+ service-type ssh
+ authorization-attribute user-role network-admin
+ authorization-attribute user-role network-operator
+#
+local-user comware class manage
+ password hash $h$6$/He7RJTULC7XgZbf$0dnKvkSXcg9whrfD04aIsnN/PimvdWYQz+5WDm0SdLzvRffZNNdzSCsIhG1ZOJR4WY4TM9bLKFdhzx0mA1xs/g==
+ service-type ssh
+ authorization-attribute user-role network-admin
+ authorization-attribute user-role network-operator
+#
+local-user vagrant class manage
+ password hash $h$6$n1EYmFSZxFY4Erey$zx7kWBOYvmB+CwmP3/kpfVcbB2PPXBzBD2g41uOW8vIAfleMHs4DWI/i2P8sfsF1whbkAePXAcnvQE/RBiS9UA==
+ service-type ssh http https
+ authorization-attribute user-role network-admin
+ authorization-attribute user-role network-operator
+#
+public-key peer WBENCH
+ public-key-code begin
+   30820122300D06092A864886F70D01010105000382010F003082010A0282010100D9098140
+   152A7376794B699A8C6713AD81CE9193240BB249D9AE04EEDE157CCDC25AE9C4ED15EEFDCE
+   E48226B073D7C972F13A5AA9C85115FB7CC0C27760E5A957D57BC2437F6CB814557D4BFEC1
+   F0EB1BFA276FEB9FF2A89FEAFC6FE518D24144BCB9BBF7E0E7858E0E39222CE4E7683F747E
+   BF0622E0640E6D2863CFF83A50F21024E2BCE40CCACEE2354A5B7160CBAC13E2EF2EFEE307
+   8A8DD5DDB4850F0D07938DE91625E0E54AA2F963A06D7E01A1688748E8C383CACFF60E5AEB
+   611C7B3606185B79720D366C338D02CED166FE7364F711F72AC447EB7F00DC9B40EAAB3EAF
+   3576C1FF7BA17C87DF62372D3BCA398DBD5D31DB3DAD5DCD73901689BD830203010001
+ public-key-code end
+ peer-public-key end
+#
+ netconf ssh server enable
+#
+return

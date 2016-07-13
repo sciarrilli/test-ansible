@@ -1,0 +1,36 @@
+---
+
+  - name: ebgp fabric
+    hosts: all
+    gather_facts: no
+    connection: local
+
+    tasks:
+
+      - name: template'tize configs
+        template: src=templates/vsr_temp.j2 dest=configs/{{ inventory_hostname }}.cfg
+        tags: build
+
+      - name: comware install config
+        comware_install_config:
+          config_file='./configs/{{ inventory_hostname }}.cfg'
+          diff_file='./configs/diffs/{{ inventory_hostname }}.diff'
+          commit_changes=true
+          username={{ username }}
+          password={{ password }}
+          hostname={{ inventory_hostname }}
+        tags: push
+
+      - name: apply new config
+        comware_command:
+          command:
+            - configuration replace file flash:/{{ inventory_hostname }}.cfg
+            - save safely force
+          type: config
+          username: "{{ username }}"
+          password: "{{ password }}"
+          hostname: "{{ inventory_hostname }}"
+        register: result
+        tags: activate
+
+      - debug: var=result
